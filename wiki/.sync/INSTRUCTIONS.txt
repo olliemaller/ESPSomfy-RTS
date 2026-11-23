@@ -1,0 +1,26 @@
+Updating the English wiki after the French wiki changes
+
+  git clone --depth 1 https://github.com/xkain/ESPSomfy-RTS.wiki fr
+  (this branch checked out as repo/, English pages in repo/wiki)
+  python3 repo/wiki/.sync/sync.py status fr
+
+For each CHANGED page: translate fr/<page>.md again into repo/wiki/<english>.md (pages.json),
+reusing the existing English page's wording where the French didn't change.
+For a NEW page: pick an English file name and title, add it to pages.json, translate it, and add
+it to _Sidebar.md where the French sidebar has it. For a DELETED page: remove the English page,
+its pages.json entry and its sidebar line.
+
+Translation rules
+- Australian/British spelling in prose. Keep the firmware's English button and field labels
+  exactly as the English interface shows them (data-dev/locale/en.json in xkain/ESPSomfy-RTS;
+  look the French label up in fr.json under the same key). Labels of things that only exist in
+  the French interface (the pre-assembled box assistant) stay in French with a translation.
+- Keep every link target exactly as the French page has it, and keep every heading, in the
+  same order and at the same level. Leave code blocks, image URLs and HTML attributes as they are.
+- Then run:  python3 repo/wiki/.sync/sync.py fix fr <english pages you wrote>
+  Only run fix on pages that still have French link targets (fresh translations); running it
+  again on a finished page drops anchors that share a page name with French.
+- Then:      python3 repo/wiki/.sync/sync.py check fr      (must print "all links OK")
+- Then:      python3 repo/wiki/.sync/sync.py done fr
+- Commit as olliemaller <olliemaller@users.noreply.github.com> and push the wiki-en branch.
+  The Publish English wiki workflow copies wiki/ into the repository wiki.

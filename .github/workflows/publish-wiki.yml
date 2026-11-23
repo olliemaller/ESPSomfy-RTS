@@ -1,0 +1,31 @@
+name: Publish English wiki
+
+on:
+  push:
+    branches: [wiki-en]
+    paths: ["wiki/**", ".github/workflows/publish-wiki.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency: publish-wiki
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Copy wiki/ into the repository's wiki
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git clone "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.wiki.git" out
+          rsync -a --delete --exclude .git wiki/ out/
+          cd out
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then echo "Wiki already up to date"; exit 0; fi
+          git commit -m "Publish from ${GITHUB_SHA::7}: $(git -C .. log -1 --format=%s)"
+          git push origin HEAD:master
